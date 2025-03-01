@@ -10,7 +10,9 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f2f2f2;
+            background-color: #181818;
+            color: white;
+            overflow-x: hidden;
         }
 
         /* Header */
@@ -18,9 +20,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #333;
-            padding: 10px 20px;
-            color: white;
+            padding: 15px 20px;
+            background-color: #202020;
         }
 
         .logo {
@@ -28,130 +29,226 @@
             font-weight: bold;
         }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            margin: 0;
-            padding: 0;
+        .search-box {
+            flex-grow: 1;
+            margin: 0 20px;
+            position: relative;
         }
 
-        nav ul li {
-            margin-left: 20px;
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 50px 20px;
-            background-color: #ff665a;
-            color: white;
-        }
-
-        .hero button {
-            background-color: white;
-            color: #ff665a;
+        .search-box input {
+            width: 100%;
+            padding: 8px;
             border: none;
-            padding: 10px 20px;
-            font-size: 18px;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        /* Friends list */
+        .friends {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .friend {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .friend:hover {
+            transform: scale(1.1);
+        }
+
+        .friend img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #555;
+        }
+
+        .friend span {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* People You May Know */
+        .people-list {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px;
+            gap: 15px;
+            white-space: nowrap;
+        }
+
+        .person {
+            background: #252525;
+            padding: 10px;
+            border-radius: 10px;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .person:hover {
+            background: #333;
+        }
+
+        .person img {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+        }
+
+        .add-friend {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 5px;
+            margin-top: 5px;
             cursor: pointer;
             border-radius: 5px;
         }
 
-        /* Games Section */
-        .games-list {
+        /* Game section */
+        .games {
             padding: 20px;
-            text-align: center;
         }
 
         .game-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 20px;
+            justify-content: center;
         }
 
-        .game-card {
-            width: 200px;
-            background-color: white;
+        .game {
+            background: #252525;
             padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.3s;
         }
 
-        .game-card:hover {
+        .game:hover {
             transform: scale(1.05);
         }
 
-        .game-card img {
+        .game img {
             width: 100%;
-            border-radius: 5px;
+            border-radius: 10px;
         }
 
-        /* Footer */
-        footer {
-            text-align: center;
+        .likes {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* Footer Nav */
+        .footer-nav {
+            display: flex;
+            justify-content: space-around;
             padding: 10px;
-            background-color: #333;
-            color: white;
-            margin-top: 20px;
+            background: #202020;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer-nav div {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .footer-nav div:hover {
+            color: #007aff;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fade 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">RandomBlox</div>
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Games</a></li>
-                <li><a href="#">Avatar Shop</a></li>
-                <li><a href="#">Create</a></li>
-                <li><a href="#">Robux</a></li>
-            </ul>
-        </nav>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search games..." onkeyup="filterGames()">
+        </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <h1>Welcome to RandomBlox</h1>
-            <p>Experience the ultimate virtual universe inside RandomOS.</p>
-            <button onclick="playNow()">Play Now</button>
-        </section>
+    <section>
+        <h2 style="padding-left: 20px;">Friends (214)</h2>
+        <div class="friends fade-in">
+            <div class="friend"><img src="https://placekitten.com/50/50"><span>Jeb</span></div>
+            <div class="friend"><img src="https://placekitten.com/51/50"><span>Hexa</span></div>
+            <div class="friend"><img src="https://placekitten.com/52/50"><span>Claude</span></div>
+        </div>
+    </section>
 
-        <section class="games-list">
-            <h2>Popular Games</h2>
-            <div class="game-container">
-                <div class="game-card" onclick="alert('Launching Game 1...')">
-                    <img src="https://placekitten.com/200/150" alt="Game 1">
-                    <h3>Game Title 1</h3>
-                </div>
-                <div class="game-card" onclick="alert('Launching Game 2...')">
-                    <img src="https://placekitten.com/201/150" alt="Game 2">
-                    <h3>Game Title 2</h3>
-                </div>
-                <div class="game-card" onclick="alert('Launching Game 3...')">
-                    <img src="https://placekitten.com/202/150" alt="Game 3">
-                    <h3>Game Title 3</h3>
-                </div>
+    <section>
+        <h2 style="padding-left: 20px;">People You May Know</h2>
+        <div class="people-list fade-in">
+            <div class="person"><img src="https://placekitten.com/80/80"><p>Ham</p><button class="add-friend">Add</button></div>
+            <div class="person"><img src="https://placekitten.com/81/80"><p>Grass</p><button class="add-friend">Add</button></div>
+        </div>
+    </section>
+
+    <section class="games">
+        <h2>Continue</h2>
+        <div class="game-container fade-in" id="game-list">
+            <div class="game" data-name="Natural Disaster">
+                <img src="https://placekitten.com/200/150">
+                <h3>Natural Disaster</h3>
+                <p class="likes">90% - 71K players</p>
             </div>
-        </section>
-    </main>
+            <div class="game" data-name="Pet Simulator 99">
+                <img src="https://placekitten.com/201/150">
+                <h3>Pet Simulator 99</h3>
+                <p class="likes">95% - 126K players</p>
+            </div>
+        </div>
+    </section>
 
-    <footer>
-        <p>&copy; 2025 RandomOS. All rights reserved.</p>
+    <footer class="footer-nav">
+        <div>🏠 Home</div>
+        <div>📈 Charts</div>
+        <div>🧑 Avatar</div>
+        <div>🎉 Party</div>
     </footer>
 
     <script>
-        function playNow() {
-            alert("Redirecting to RandomBlox...");
-            // Replace this with actual navigation logic
+        function filterGames() {
+            let searchInput = document.getElementById('search').value.toLowerCase();
+            let games = document.querySelectorAll('.game');
+
+            games.forEach(game => {
+                let name = game.getAttribute('data-name').toLowerCase();
+                game.style.display = name.includes(searchInput) ? 'block' : 'none';
+            });
         }
     </script>
 </body>
