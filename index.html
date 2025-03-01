@@ -34,9 +34,7 @@
       padding: 0;
       background: #131313;
       color: #eee;
-      overflow-x: hidden;
     }
-    a { text-decoration: none; color: inherit; }
 
     /* Header */
     header {
@@ -63,16 +61,7 @@
       font-size: 14px;
     }
 
-    /* Main Content */
-    main {
-      padding: 20px;
-    }
-
-    /* Friends & Suggested Users */
-    .section-title {
-      margin: 20px 0 10px 10px;
-      font-size: 16px;
-    }
+    /* Profile Container */
     .scroll-container {
       display: flex;
       overflow-x: auto;
@@ -82,34 +71,17 @@
     .profile {
       width: 80px;
       height: 80px;
-      background: #222;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
-    /* Games Section */
-    .game-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-    }
-    .game {
-      background: #252525;
-      border-radius: 10px;
-      width: 160px;
-      padding: 8px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .game img {
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    /* Bottom Navigation (Compact) */
+    /* Bottom Navigation */
     .footer-nav {
       display: flex;
       justify-content: space-around;
@@ -133,101 +105,73 @@
   <header>
     <div class="logo">RandomBlox</div>
     <div class="search-box">
-      <input type="text" id="search" placeholder="Search games..." onkeyup="filterGames()" />
+      <input type="text" id="search" placeholder="Search games..." />
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main>
-    <!-- Friends Section -->
-    <h2 class="section-title">Friends</h2>
-    <div class="scroll-container" id="friends-list">
-      <div class="profile" id="friend1"></div>
-      <div class="profile" id="friend2"></div>
-      <div class="profile" id="friend3"></div>
-    </div>
+  <!-- Friends Section -->
+  <h2>Friends</h2>
+  <div class="scroll-container" id="friends-list">
+    <div class="profile" id="friend1"></div>
+    <div class="profile" id="friend2"></div>
+    <div class="profile" id="friend3"></div>
+  </div>
 
-    <!-- People You May Know -->
-    <h2 class="section-title">People You May Know</h2>
-    <div class="scroll-container" id="people-list">
-      <div class="profile" id="person1"></div>
-      <div class="profile" id="person2"></div>
-    </div>
-
-    <!-- Games Section -->
-    <h2 class="section-title">Games</h2>
-    <div class="game-container" id="game-list">
-      <div class="game" onclick="goToGame('Natural Disaster')">
-        <img src="https://placekitten.com/160/100" />
-        <h3>Natural Disaster</h3>
-      </div>
-      <div class="game" onclick="goToGame('Pet Simulator 99')">
-        <img src="https://placekitten.com/161/100" />
-        <h3>Pet Simulator 99</h3>
-      </div>
-    </div>
-  </main>
+  <!-- People You May Know -->
+  <h2>People You May Know</h2>
+  <div class="scroll-container" id="people-list">
+    <div class="profile" id="person1"></div>
+    <div class="profile" id="person2"></div>
+  </div>
 
   <!-- Footer Navigation -->
   <footer class="footer-nav">
-    <div onclick="navigate('Home')">Home</div>
-    <div onclick="navigate('Charts')">Charts</div>
-    <div onclick="navigate('Avatar')">Avatar</div>
-    <div onclick="navigate('Party')">Party</div>
+    <div>Home</div>
+    <div>Charts</div>
+    <div>Avatar</div>
+    <div>Party</div>
   </footer>
 
-  <!-- Scripts -->
   <script>
     // Hide Loading Screen
     window.addEventListener('load', () => {
       document.getElementById('loading-overlay').classList.add('hidden');
     });
 
-    // Search filter for games
-    function filterGames() {
-      const searchInput = document.getElementById('search').value.toLowerCase();
-      document.querySelectorAll('.game').forEach(game => {
-        game.style.display = game.innerText.toLowerCase().includes(searchInput) ? 'block' : 'none';
-      });
-    }
-
-    // Clickable game links
-    function goToGame(gameName) {
-      alert("Navigating to " + gameName + "...");
-    }
-
-    // Footer navigation
-    function navigate(page) {
-      alert("Navigating to " + page + "...");
-    }
-
     // 3D Profile Avatars
     function render3DAvatar(containerId) {
+      const container = document.getElementById(containerId);
       const canvas = document.createElement("canvas");
-      document.getElementById(containerId).appendChild(canvas);
+      container.appendChild(canvas);
 
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
       renderer.setSize(80, 80);
+      container.appendChild(renderer.domElement);
+
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-      camera.position.z = 5;
+      camera.position.z = 2.5;
 
-      // Create a 3D model (placeholder cube)
-      const geometry = new THREE.BoxGeometry();
-      const material = new THREE.MeshNormalMaterial();
-      const cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
+      // Create a Roblox-style head (Sphere)
+      const geometry = new THREE.SphereGeometry(0.8, 32, 32);
+      const material = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
+      const head = new THREE.Mesh(geometry, material);
+      scene.add(head);
+
+      // Lighting
+      const light = new THREE.PointLight(0xffffff, 1);
+      light.position.set(2, 2, 5);
+      scene.add(light);
 
       function animate() {
         requestAnimationFrame(animate);
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
+        head.rotation.y += 0.01; // Rotate head slowly
         renderer.render(scene, camera);
       }
       animate();
     }
 
-    // Apply 3D avatars to profiles
+    // Apply 3D avatars
     ["friend1", "friend2", "friend3", "person1", "person2"].forEach(render3DAvatar);
   </script>
 </body>
