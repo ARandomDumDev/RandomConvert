@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RandomConvert</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Gotham+Black&display=swap');
+        @font-face {
+            font-family: 'Gotham Black';
+            src: url('Gotham-Black.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
 
         body {
             font-family: 'Gotham Black', sans-serif;
@@ -18,154 +23,140 @@
 
         .container {
             width: 90%;
-            max-width: 400px;
-            background: #0a0a40;
-            padding: 20px;
-            border-radius: 20px;
+            max-width: 500px;
             margin: 50px auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            font-size: 28px;
-        }
-
-        .file-info {
-            background: #282a36;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 16px;
+            background: #0c0c3c;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .convert-btn {
-            background: #cdd88a;
+            background: #cfdc8b;
             color: black;
             border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 18px;
-            margin-top: 10px;
-            display: block;
-            width: 100%;
+            transition: 0.3s;
         }
 
         .convert-btn:hover {
-            background: #aabb77;
+            background: #e6f07b;
         }
 
-        .video-container {
-            background: white;
-            padding: 10px;
-            border-radius: 20px;
+        .file-info {
             margin-top: 15px;
+            font-size: 18px;
         }
 
-        video {
+        .progress {
+            margin-top: 15px;
+            width: 100%;
+            height: 5px;
+            background: gray;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: lightgreen;
+            transition: width 0.3s;
+        }
+
+        .video-player {
+            width: 100%;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        #video {
             width: 100%;
             border-radius: 10px;
-        }
-
-        #progress {
-            font-size: 14px;
-            color: #ffb86c;
-            margin-top: 10px;
         }
 
         input[type="file"] {
             display: none;
         }
 
-        label.upload-label {
-            background: #6272a4;
-            padding: 10px;
+        .custom-file-upload {
+            background: #cfdc8b;
+            color: black;
+            padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
-            display: block;
-            margin: 10px auto;
-            width: fit-content;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .custom-file-upload:hover {
+            background: #e6f07b;
         }
     </style>
 </head>
 <body>
-
     <h1>RandomConvert</h1>
-
     <div class="container">
-        <label for="fileInput" class="upload-label">Select a video</label>
+        <label for="fileInput" class="custom-file-upload">Select File</label>
         <input type="file" id="fileInput" accept="video/*">
-        
-        <div id="fileDetails" class="file-info" style="display: none;">
-            <p id="fileName"></p>
-            <p id="fileSize"></p>
+        <div class="file-info" id="fileInfo">No file selected</div>
+
+        <button class="convert-btn" id="convertBtn">Convert</button>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
         </div>
 
-        <label for="formatSelect">Choose format:</label>
-        <select id="formatSelect">
-            <option value="mp4">MP4</option>
-            <option value="webm">WebM</option>
-            <option value="avi">AVI</option>
-            <option value="mov">MOV</option>
-        </select>
-
-        <button id="convertBtn" class="convert-btn">Convert</button>
-        <p id="progress"></p>
-
-        <div class="video-container">
-            <video id="videoPlayer" controls></video>
+        <div class="video-player">
+            <video id="video" controls></video>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6"></script>
     <script>
-        const { createFFmpeg, fetchFile } = FFmpeg;
-        const ffmpeg = createFFmpeg({ log: true });
-
         const fileInput = document.getElementById("fileInput");
-        const formatSelect = document.getElementById("formatSelect");
+        const fileInfo = document.getElementById("fileInfo");
         const convertBtn = document.getElementById("convertBtn");
-        const progress = document.getElementById("progress");
-        const videoPlayer = document.getElementById("videoPlayer");
-        const fileDetails = document.getElementById("fileDetails");
-        const fileNameElem = document.getElementById("fileName");
-        const fileSizeElem = document.getElementById("fileSize");
+        const progressBar = document.getElementById("progressBar");
+        const video = document.getElementById("video");
 
-        fileInput.addEventListener("change", () => {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                fileDetails.style.display = "block";
-                fileNameElem.textContent = `📁 ${file.name}`;
-                fileSizeElem.textContent = `📏 ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+        let selectedFile = null;
+
+        fileInput.addEventListener("change", function(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                fileInfo.textContent = `${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)`;
+            } else {
+                fileInfo.textContent = "No file selected";
             }
         });
 
-        convertBtn.addEventListener("click", async () => {
-            if (!fileInput.files.length) {
-                alert("Please select a file first.");
+        convertBtn.addEventListener("click", function() {
+            if (!selectedFile) {
+                alert("Please select a file first!");
                 return;
             }
 
-            if (!ffmpeg.isLoaded()) {
-                progress.textContent = "Loading FFmpeg...";
-                await ffmpeg.load();
-            }
+            fileInfo.textContent = "Converting...";
+            progressBar.style.width = "0%";
 
-            const file = fileInput.files[0];
-            const outputFormat = formatSelect.value;
-            progress.textContent = "Converting, please wait...";
+            // Simulate conversion progress
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + "%";
 
-            ffmpeg.FS("writeFile", "input", await fetchFile(file));
-            await ffmpeg.run("-i", "input", `output.${outputFormat}`);
-
-            const data = ffmpeg.FS("readFile", `output.${outputFormat}`);
-            const blob = new Blob([data.buffer], { type: `video/${outputFormat}` });
-            const url = URL.createObjectURL(blob);
-
-            videoPlayer.src = url;
-            progress.textContent = "✅ Conversion complete!";
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    fileInfo.textContent = "Conversion Complete!";
+                    video.src = URL.createObjectURL(selectedFile);
+                }
+            }, 500);
         });
     </script>
-
 </body>
 </html>
