@@ -5,69 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RandomConvert</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gotham+Black&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1e1e2e;
+            font-family: 'Gotham Black', sans-serif;
+            background: linear-gradient(135deg, #1e1e60, #25258a);
             color: white;
             text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
+
         .container {
-            max-width: 600px;
-            margin: auto;
-            background: #282a36;
+            width: 90%;
+            max-width: 400px;
+            background: #0a0a40;
             padding: 20px;
+            border-radius: 20px;
+            margin: 50px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        .file-info {
+            background: #282a36;
+            padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 10px;
+            font-size: 16px;
         }
-        h1, h2 {
-            color: #ff79c6;
-        }
-        .upload-label {
-            display: block;
-            background: #6272a4;
-            padding: 10px;
-            border-radius: 5px;
+
+        .convert-btn {
+            background: #cdd88a;
+            color: black;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
             cursor: pointer;
-            margin: 10px auto;
-            width: fit-content;
+            font-size: 18px;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
         }
+
+        .convert-btn:hover {
+            background: #aabb77;
+        }
+
+        .video-container {
+            background: white;
+            padding: 10px;
+            border-radius: 20px;
+            margin-top: 15px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        #progress {
+            font-size: 14px;
+            color: #ffb86c;
+            margin-top: 10px;
+        }
+
         input[type="file"] {
             display: none;
         }
-        button {
-            background: #50fa7b;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+
+        label.upload-label {
+            background: #6272a4;
+            padding: 10px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background: #40c060;
-        }
-        video {
-            width: 100%;
-            margin-top: 10px;
-        }
-        #progress {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #ffb86c;
+            display: block;
+            margin: 10px auto;
+            width: fit-content;
         }
     </style>
 </head>
 <body>
+
+    <h1>RandomConvert</h1>
+
     <div class="container">
-        <h1>RandomConvert</h1>
-        <p>Convert your video files easily.</p>
-
-        <label for="fileInput" class="upload-label">Select a video file</label>
+        <label for="fileInput" class="upload-label">Select a video</label>
         <input type="file" id="fileInput" accept="video/*">
+        
+        <div id="fileDetails" class="file-info" style="display: none;">
+            <p id="fileName"></p>
+            <p id="fileSize"></p>
+        </div>
 
-        <label for="formatSelect">Choose output format:</label>
+        <label for="formatSelect">Choose format:</label>
         <select id="formatSelect">
             <option value="mp4">MP4</option>
             <option value="webm">WebM</option>
@@ -75,12 +109,12 @@
             <option value="mov">MOV</option>
         </select>
 
-        <button id="convertBtn">Convert</button>
+        <button id="convertBtn" class="convert-btn">Convert</button>
         <p id="progress"></p>
 
-        <h2>Converted Video</h2>
-        <video id="videoPlayer" controls></video>
-        <a id="downloadLink" style="display: none;" download="converted-video">Download Converted Video</a>
+        <div class="video-container">
+            <video id="videoPlayer" controls></video>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6"></script>
@@ -88,13 +122,25 @@
         const { createFFmpeg, fetchFile } = FFmpeg;
         const ffmpeg = createFFmpeg({ log: true });
 
-        document.getElementById("convertBtn").addEventListener("click", async function() {
-            const fileInput = document.getElementById("fileInput");
-            const formatSelect = document.getElementById("formatSelect");
-            const videoPlayer = document.getElementById("videoPlayer");
-            const progress = document.getElementById("progress");
-            const downloadLink = document.getElementById("downloadLink");
+        const fileInput = document.getElementById("fileInput");
+        const formatSelect = document.getElementById("formatSelect");
+        const convertBtn = document.getElementById("convertBtn");
+        const progress = document.getElementById("progress");
+        const videoPlayer = document.getElementById("videoPlayer");
+        const fileDetails = document.getElementById("fileDetails");
+        const fileNameElem = document.getElementById("fileName");
+        const fileSizeElem = document.getElementById("fileSize");
 
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileDetails.style.display = "block";
+                fileNameElem.textContent = `📁 ${file.name}`;
+                fileSizeElem.textContent = `📏 ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+            }
+        });
+
+        convertBtn.addEventListener("click", async () => {
             if (!fileInput.files.length) {
                 alert("Please select a file first.");
                 return;
@@ -109,29 +155,17 @@
             const outputFormat = formatSelect.value;
             progress.textContent = "Converting, please wait...";
 
-            // Load file into FFmpeg
             ffmpeg.FS("writeFile", "input", await fetchFile(file));
-
-            // Run conversion
             await ffmpeg.run("-i", "input", `output.${outputFormat}`);
 
-            // Get converted file
             const data = ffmpeg.FS("readFile", `output.${outputFormat}`);
-
-            // Create blob for download
             const blob = new Blob([data.buffer], { type: `video/${outputFormat}` });
             const url = URL.createObjectURL(blob);
 
-            // Show in video player
             videoPlayer.src = url;
-            
-            // Provide download option
-            downloadLink.href = url;
-            downloadLink.style.display = "block";
-            downloadLink.textContent = "Download Converted Video";
-
-            progress.textContent = "Conversion complete!";
+            progress.textContent = "✅ Conversion complete!";
         });
     </script>
+
 </body>
 </html>
