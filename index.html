@@ -3,81 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RandomConvert - Video Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.wasm/0.11.0/ffmpeg.min.js"></script>
+    <title>RandomConvert</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #181818; color: #fff; text-align: center; padding: 20px; position: relative; }
-        
-        h1 { margin-bottom: 20px; font-size: 26px; color: #fff; }
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
 
         /* Progress Bar */
         .progress-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 300px;
-            background: #444;
+            position: relative;
+            width: 70%;
             height: 30px;
+            background: #555;
             border-radius: 15px;
-            display: flex;
-            align-items: center;
-            padding: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
+
         .progress-bar {
-            height: 100%;
             width: 0%;
-            background: #00cc66;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 14px;
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            color: black;
             font-weight: bold;
         }
 
-        /* Convert Box */
+        /* Conversion Box */
         .convert-box {
-            background: #d1d1d1;
+            background: #ddd;
             padding: 20px;
             width: 400px;
             border-radius: 20px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
-            color: #000;
-            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+            color: black;
+            margin-bottom: 15px;
         }
-        .file-button {
-            background: #555;
-            color: #fff;
+
+        .convert-box button {
+            background: #666;
+            color: white;
             padding: 10px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
             margin-top: 10px;
         }
 
         /* Sticky Note */
         .sticky-note {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 220px;
-            background: #fdfd96;
-            color: #333;
+            background: #f5d26c;
             padding: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 5px;
-            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+            width: 220px;
+            position: absolute;
+            right: 50px;
+            top: 30%;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
             transform: rotate(-3deg);
+        }
+
+        .sticky-note p {
+            font-size: 14px;
+            color: black;
             text-align: left;
         }
-        .sticky-note h3 {
-            margin: 0 0 5px;
-            font-size: 16px;
-            color: #000;
+
+        /* Output File Selection */
+        .output-selection {
+            background: #ccc;
+            padding: 10px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -85,67 +108,81 @@
 
     <h1>RandomConvert</h1>
 
-    <!-- Progress Bar on Top Left -->
+    <!-- Progress Bar -->
     <div class="progress-container">
-        <div class="progress-bar" id="progressBar">0% Done</div>
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-text" id="progressText">0% Done</div>
     </div>
 
     <!-- Convert Box -->
     <div class="convert-box">
         <h2>Convert Here</h2>
-        <button class="file-button" id="fileInputButton">Select 1 file to convert here!</button>
+        <input type="file" id="fileInput">
+        <button onclick="startConversion()">Start Conversion</button>
         <p id="fileName">No file selected</p>
-        <p id="conversionText">To <span id="outputFormat">MP4</span></p>
+        <p id="outputFormat">To: (Choose Format Below)</p>
     </div>
 
-    <!-- Sticky Note for Limitations -->
+    <!-- Output File Selection -->
+    <div class="output-selection">
+        <label for="format">Select Output File Extension</label>
+        <select id="format">
+            <option value="mp4">MP4</option>
+            <option value="mkv">MKV</option>
+            <option value="avi">AVI</option>
+            <option value="mov">MOV</option>
+        </select>
+    </div>
+
+    <!-- Sticky Note -->
     <div class="sticky-note">
-        <h3>⚠️ Limitations:</h3>
-        <ul>
-            <li>2GB Max (cuz we are cool)</li>
-            <li>Runs in Browser memory</li>
-            <li>Slower than native FFmpeg</li>
-            <li>Your browser might get angry at converting</li>
-        </ul>
+        <p><strong>Limitations:</strong></p>
+        <p>• 2GB Max (cuz we are cool)</p>
+        <p>• Runs in Browser memory</p>
+        <p>• Slower than native FFmpeg</p>
+        <p>• Your browser might get angry at converting</p>
     </div>
-
-    <input type="file" id="fileInput" style="display: none;" accept="video/*">
 
     <script>
-        const fileInput = document.getElementById("fileInput");
-        const fileInputButton = document.getElementById("fileInputButton");
-        const progressBar = document.getElementById("progressBar");
-        const fileNameText = document.getElementById("fileName");
-        const outputFormatText = document.getElementById("outputFormat");
-        let file;
-
-        fileInputButton.addEventListener("click", () => fileInput.click());
-
-        fileInput.addEventListener("change", (e) => {
-            file = e.target.files[0];
-            if (!file) return;
-            fileNameText.textContent = file.name;
-            outputFormatText.textContent = "MP4"; // Default conversion format
+        // File selection
+        document.getElementById("fileInput").addEventListener("change", function () {
+            let file = this.files[0];
+            if (file) {
+                document.getElementById("fileName").textContent = file.name;
+            }
         });
 
-        function updateProgress(percentage) {
-            progressBar.style.width = percentage + "%";
-            progressBar.textContent = percentage + "% Done";
-        }
+        // Start Conversion
+        function startConversion() {
+            let file = document.getElementById("fileInput").files[0];
+            let format = document.getElementById("format").value;
 
-        // Simulating conversion progress for UI demonstration
-        setTimeout(() => {
+            if (!file) {
+                alert("Please select a file to convert.");
+                return;
+            }
+
+            // Update UI
+            document.getElementById("outputFormat").textContent = `To: ${file.name.split('.').slice(0, -1).join('.')}.${format}`;
+
+            // Fake conversion progress
             let progress = 0;
-            const interval = setInterval(() => {
+            let progressBar = document.getElementById("progressBar");
+            let progressText = document.getElementById("progressText");
+
+            let interval = setInterval(() => {
                 if (progress >= 100) {
                     clearInterval(interval);
-                    progressBar.textContent = "Completed!";
+                    progressText.textContent = "Conversion Complete!";
+                    alert("File converted successfully!");
                 } else {
-                    progress += 5;
-                    updateProgress(progress);
+                    progress += Math.floor(Math.random() * 10) + 5; // Increase randomly
+                    if (progress > 100) progress = 100;
+                    progressBar.style.width = progress + "%";
+                    progressText.textContent = progress + "% Done";
                 }
             }, 500);
-        }, 1000);
+        }
     </script>
 
 </body>
