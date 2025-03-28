@@ -6,36 +6,56 @@
     <title>RandomConvert - Video Converter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.wasm/0.11.0/ffmpeg.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #121212; color: #fff; text-align: center; padding: 20px; }
-        h1 { margin-bottom: 10px; }
-        .drop-zone { border: 2px dashed #555; padding: 20px; width: 90%; max-width: 500px; cursor: pointer; background: #1e1e1e; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #101820; color: #fff; text-align: center; padding: 20px; position: relative; }
+        
+        h1 { margin-bottom: 10px; color: #00ffcc; }
+        p { font-size: 14px; color: #bbb; }
+        
+        .drop-zone { border: 2px dashed #555; padding: 20px; width: 90%; max-width: 500px; cursor: pointer; background: #1e1e1e; border-radius: 8px; transition: 0.3s; }
+        .drop-zone:hover { background: #292929; }
         .drop-zone.highlight { border-color: #00ffcc; }
+        
         .file-input { display: none; }
-        .formats { margin: 10px 0; }
-        button { background: #00ffcc; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        
+        .formats { margin: 15px 0; }
+        select { padding: 8px; border: none; border-radius: 5px; background: #222; color: #fff; }
+        
+        button { background: #00ffcc; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; border-radius: 8px; transition: 0.3s; }
         button:disabled { background: #555; cursor: not-allowed; }
-        .progress { width: 100%; background: #444; height: 5px; margin-top: 10px; position: relative; }
+        button:hover:not(:disabled) { background: #00e6b8; }
+        
+        /* Progress Bar at Top Left */
+        .progress-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+        }
+        .progress-text { text-align: left; font-size: 14px; color: #00ffcc; margin-bottom: 5px; }
+        .progress { width: 100%; background: #333; height: 5px; border-radius: 5px; overflow: hidden; }
         .progress-bar { height: 5px; width: 0%; background: #00ffcc; transition: width 0.4s; }
 
-        /* Sticky Note Styling */
+        /* Realistic Sticky Note */
         .sticky-note {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #ffeb3b;
-            color: #000;
-            padding: 10px 15px;
-            width: 250px;
+            width: 220px;
+            background: #fdfd96;
+            color: #333;
+            padding: 15px;
             font-size: 14px;
             font-weight: bold;
             border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+            transform: rotate(-3deg);
             text-align: left;
         }
         .sticky-note h3 {
             margin: 0 0 5px;
             font-size: 16px;
+            color: #000;
         }
     </style>
 </head>
@@ -44,6 +64,12 @@
     <h1>RandomConvert</h1>
     <p>Convert any video format to another. Max: 2GB</p>
     
+    <!-- Progress Bar on Top Left -->
+    <div class="progress-container">
+        <p class="progress-text" id="progressText">Progress: 0%</p>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
     <div class="drop-zone" id="dropZone">
         <p>Drag & Drop Video Here or Click to Browse</p>
         <input type="file" id="fileInput" class="file-input" accept="video/*">
@@ -61,8 +87,6 @@
     </div>
 
     <button id="convertBtn" disabled>Convert</button>
-
-    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
 
     <p id="status"></p>
 
@@ -82,6 +106,7 @@
         const dropZone = document.getElementById("dropZone");
         const convertBtn = document.getElementById("convertBtn");
         const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
         const statusText = document.getElementById("status");
         let file;
 
@@ -115,6 +140,7 @@
             if (!file) return;
             convertBtn.disabled = true;
             progressBar.style.width = "0%";
+            progressText.textContent = "Progress: 0%";
             statusText.textContent = "Converting... Please wait.";
 
             const { createFFmpeg, fetchFile } = FFmpeg;
@@ -142,6 +168,7 @@
             statusText.textContent = "Conversion Complete!";
             convertBtn.disabled = false;
             progressBar.style.width = "100%";
+            progressText.textContent = "Progress: 100%";
         });
     </script>
 
